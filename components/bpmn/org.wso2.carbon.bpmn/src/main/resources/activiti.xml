@@ -20,4 +20,9 @@
         <property name="maxConnectionsPerRoute" value="200"/>
     </bean>
 
+    <bean id="dataTypeConfig">
+        <property name="maxDBStringLength" value="4000"/>
+    </bean>
+
+
 </beans>

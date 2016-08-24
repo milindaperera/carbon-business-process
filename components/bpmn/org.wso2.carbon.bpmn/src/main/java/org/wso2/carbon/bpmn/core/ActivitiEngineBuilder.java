@@ -53,6 +53,7 @@ import org.wso2.carbon.bpmn.core.types.datatypes.json.ExtendedJsonType;
 import org.wso2.carbon.bpmn.core.types.datatypes.json.JsonAPIResolverFactory;
 import org.wso2.carbon.bpmn.core.types.datatypes.xml.XmlAPIResolverFactory;
 import org.wso2.carbon.bpmn.core.types.datatypes.xml.XmlType;
+import org.wso2.carbon.bpmn.core.utils.BPMNActivitiConfiguration;
 import org.wso2.carbon.utils.CarbonUtils;
 
 import java.io.File;
@@ -128,6 +129,18 @@ public class ActivitiEngineBuilder {
     private void setSupportedVariableTypes (ProcessEngineConfigurationImpl processEngineConfiguration) {
         VariableTypes variableTypes = new DefaultVariableTypes();
 
+        int maxDBStringDataLength = ProcessEngineConfigurationImpl.DEFAULT_GENERIC_MAX_LENGTH_STRING;
+        if (BPMNActivitiConfiguration.getInstance().getBPMNPropertyValue("dataTypeConfig", "maxDBStringLength") != null) {
+
+            maxDBStringDataLength = Integer.parseInt(BPMNActivitiConfiguration.getInstance().
+                    getBPMNPropertyValue("dataTypeConfig", "maxDBStringLength"));
+
+        } else if (ProcessEngineConfigurationImpl.DATABASE_TYPE_ORACLE.equals(processEngineConfiguration.getDatabaseType())) {
+
+            maxDBStringDataLength = ProcessEngineConfigurationImpl.DEFAULT_ORACLE_MAX_LENGTH_STRING;
+
+        }
+
         List<VariableType> customPreVariableTypes = processEngineConfiguration.getCustomPreVariableTypes();
         if (customPreVariableTypes!=null) {
             for (VariableType customVariableType: customPreVariableTypes) {
@@ -137,8 +150,8 @@ public class ActivitiEngineBuilder {
 
         //Default types in Activiti
         variableTypes.addType(new NullType());
-        variableTypes.addType(new StringType(ProcessEngineConfigurationImpl.DEFAULT_ORACLE_MAX_LENGTH_STRING));
-        variableTypes.addType(new LongStringType(ProcessEngineConfigurationImpl.DEFAULT_ORACLE_MAX_LENGTH_STRING + 1));
+        variableTypes.addType(new StringType(maxDBStringDataLength));
+        variableTypes.addType(new LongStringType(maxDBStringDataLength + 1));
         variableTypes.addType(new BooleanType());
         variableTypes.addType(new ShortType());
         variableTypes.addType(new IntegerType());
@@ -146,15 +159,15 @@ public class ActivitiEngineBuilder {
         variableTypes.addType(new DateType());
         variableTypes.addType(new DoubleType());
         variableTypes.addType(new UUIDType());;
-        variableTypes.addType(new JsonType(ProcessEngineConfigurationImpl.DEFAULT_ORACLE_MAX_LENGTH_STRING, objectMapper));
-        variableTypes.addType(new LongJsonType(ProcessEngineConfigurationImpl.DEFAULT_ORACLE_MAX_LENGTH_STRING + 1, objectMapper));
+        variableTypes.addType(new JsonType(maxDBStringDataLength, objectMapper));
+        variableTypes.addType(new LongJsonType(maxDBStringDataLength + 1, objectMapper));
         variableTypes.addType(new ByteArrayType());
         variableTypes.addType(new SerializableType());
         variableTypes.addType(new CustomObjectType("item", ItemInstance.class));
         variableTypes.addType(new CustomObjectType("message", MessageInstance.class));
 
         //types added for WSO2 BPS
-        variableTypes.addType(new ExtendedJsonType(ProcessEngineConfigurationImpl.DEFAULT_ORACLE_MAX_LENGTH_STRING, objectMapper));
+        variableTypes.addType(new ExtendedJsonType(maxDBStringDataLength, objectMapper));
         variableTypes.addType(new XmlType());
 
         List<VariableType> customPostVariableTypes =processEngineConfiguration.getCustomPostVariableTypes();
